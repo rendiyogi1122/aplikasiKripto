@@ -123,16 +123,21 @@ def encrypt_data_with_metrics(plaintext: bytes, password: str, algo: str = "AES-
     hist_plaintext = calculate_histogram(plaintext)
     hist_ciphertext = calculate_histogram(ciphertext_raw)
     
-    # Avalanche Effect simulation (flip 1 random bit in plaintext)
+    # Avalanche Effect simulation (flip 1 bit in Key)
     avalanche_pct = 50.0
     if len(plaintext) > 0:
-        modified_pt = bytearray(plaintext)
-        byte_idx = random.randint(0, len(modified_pt) - 1)
-        bit_idx = random.randint(0, 7)
-        modified_pt[byte_idx] ^= (1 << bit_idx)
-        
         try:
-            mod_ciphertext_raw = cipher.encrypt(nonce, bytes(modified_pt), None)
+            modified_key = bytearray(key)
+            modified_key[0] ^= 0x01
+            
+            if algo == "AES-GCM":
+                mod_cipher = AESGCM(bytes(modified_key))
+            elif algo == "ChaCha20-Poly1305":
+                mod_cipher = ChaCha20Poly1305(bytes(modified_key))
+            else:
+                mod_cipher = cipher
+                
+            mod_ciphertext_raw = mod_cipher.encrypt(nonce, plaintext, None)
             avalanche_pct = calculate_hamming_distance_percentage(ciphertext_raw, mod_ciphertext_raw)
         except Exception:
             avalanche_pct = 50.0

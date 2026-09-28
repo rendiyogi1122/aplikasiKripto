@@ -187,7 +187,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="max-w-3xl mx-auto pt-32 pb-16 px-6">
+      <main className={`mx-auto pt-32 pb-16 px-6 transition-all duration-300 ${mode === 'menu' ? 'max-w-6xl' : mode === 'visualize' ? 'max-w-5xl' : 'max-w-3xl'}`}>
         {mode === 'menu' && (
           <div className="space-y-8 animate-in fade-in zoom-in duration-500">
             <div className="text-center space-y-4 mb-12">
