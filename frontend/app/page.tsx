@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, ChevronDown, ShieldAlert } from 'lucide-react';
 import BackgroundGlobal from '@/components/ui/BackgroundGlobal';
 import SkewCard from '@/components/ui/SkewCard';
 import BackButton from '@/components/ui/BackButton';
 import ChooseFileButton from '@/components/ui/ChooseFileButton';
+import ImageEncryptionVisualizer from '@/components/ui/ImageEncryptionVisualizer';
+import CryptoAnalyticsPanel from '@/components/ui/CryptoAnalyticsPanel';
 
-type Mode = 'menu' | 'encrypt' | 'decrypt';
+type Mode = 'menu' | 'encrypt' | 'decrypt' | 'visualize';
 type ContentType = 'text' | 'file';
 
 const API_BASE = 'http://localhost:8000';
@@ -30,14 +32,23 @@ export default function Home() {
   const [fileResult, setFileResult] = useState('');
   const [fileError, setFileError] = useState('');
 
+  const [metrics, setMetrics] = useState<{
+    execution_time_ms?: number;
+    entropy_ciphertext?: number;
+    avalanche_percentage?: number;
+    histogram_plaintext?: number[];
+    histogram_ciphertext?: number[];
+  } | null>(null);
+
   const resetState = () => {
     setTextInput(''); setPassword(''); setTextResult(''); setTextError('');
     setFile(null); setFilePassword(''); setFileResult(''); setFileError('');
+    setMetrics(null);
   };
 
   const handleEncryptText = async () => {
     if (!textInput.trim() || !password.trim()) { setTextError('Field wajib diisi'); return; }
-    setLoading(true); setTextError(''); setTextResult('');
+    setLoading(true); setTextError(''); setTextResult(''); setMetrics(null);
     try {
       const response = await fetch(`${API_BASE}/api/enkripsi/teks`, {
         method: 'POST',
@@ -45,13 +56,23 @@ export default function Home() {
         body: JSON.stringify({ teks: textInput, password_kripto: password, algo: algo }),
       });
       if (!response.ok) { const error = await response.json(); setTextError(error.detail || 'Enkripsi gagal'); }
-      else { const data = await response.json(); setTextResult(data.ciphertext); }
+      else {
+        const data = await response.json();
+        setTextResult(data.ciphertext);
+        setMetrics({
+          execution_time_ms: data.execution_time_ms,
+          entropy_ciphertext: data.entropy_ciphertext,
+          avalanche_percentage: data.avalanche_percentage,
+          histogram_plaintext: data.histogram_plaintext,
+          histogram_ciphertext: data.histogram_ciphertext,
+        });
+      }
     } catch (err) { setTextError(err instanceof Error ? err.message : 'Koneksi gagal'); } finally { setLoading(false); }
   };
 
   const handleDecryptText = async () => {
     if (!textInput.trim() || !password.trim()) { setTextError('Field wajib diisi'); return; }
-    setLoading(true); setTextError(''); setTextResult('');
+    setLoading(true); setTextError(''); setTextResult(''); setMetrics(null);
     try {
       const response = await fetch(`${API_BASE}/api/dekripsi/teks`, {
         method: 'POST',
@@ -59,31 +80,59 @@ export default function Home() {
         body: JSON.stringify({ teks: textInput, password_kripto: password, algo: algo }),
       });
       if (!response.ok) { const error = await response.json(); setTextError(error.detail || 'Dekripsi gagal'); }
-      else { const data = await response.json(); setTextResult(data.plaintext); }
+      else {
+        const data = await response.json();
+        setTextResult(data.plaintext);
+        setMetrics({
+          execution_time_ms: data.execution_time_ms,
+          entropy_ciphertext: data.entropy_ciphertext,
+          histogram_plaintext: data.histogram_plaintext,
+          histogram_ciphertext: data.histogram_ciphertext,
+        });
+      }
     } catch (err) { setTextError(err instanceof Error ? err.message : 'Koneksi gagal'); } finally { setLoading(false); }
   };
 
   const handleEncryptFile = async () => {
     if (!file || !filePassword.trim()) { setFileError('Field wajib diisi'); return; }
-    setLoading(true); setFileError(''); setFileResult('');
+    setLoading(true); setFileError(''); setFileResult(''); setMetrics(null);
     try {
       const formData = new FormData();
       formData.append('file', file); formData.append('password_kripto', filePassword); formData.append('algo', fileAlgo);
       const response = await fetch(`${API_BASE}/api/enkripsi/file`, { method: 'POST', body: formData });
       if (!response.ok) { const error = await response.json(); setFileError(error.detail || 'Enkripsi file gagal'); }
-      else { const data = await response.json(); setFileResult(data.ciphertext); }
+      else {
+        const data = await response.json();
+        setFileResult(data.ciphertext);
+        setMetrics({
+          execution_time_ms: data.execution_time_ms,
+          entropy_ciphertext: data.entropy_ciphertext,
+          avalanche_percentage: data.avalanche_percentage,
+          histogram_plaintext: data.histogram_plaintext,
+          histogram_ciphertext: data.histogram_ciphertext,
+        });
+      }
     } catch (err) { setFileError(err instanceof Error ? err.message : 'Koneksi gagal'); } finally { setLoading(false); }
   };
 
   const handleDecryptFile = async () => {
     if (!file || !filePassword.trim()) { setFileError('Field wajib diisi'); return; }
-    setLoading(true); setFileError(''); setFileResult('');
+    setLoading(true); setFileError(''); setFileResult(''); setMetrics(null);
     try {
       const formData = new FormData();
       formData.append('file', file); formData.append('password_kripto', filePassword); formData.append('algo', fileAlgo);
       const response = await fetch(`${API_BASE}/api/dekripsi/file`, { method: 'POST', body: formData });
       if (!response.ok) { const error = await response.json(); setFileError(error.detail || 'Dekripsi file gagal'); }
-      else { const data = await response.json(); setFileResult(data.file_asli_b64); }
+      else {
+        const data = await response.json();
+        setFileResult(data.file_asli_b64);
+        setMetrics({
+          execution_time_ms: data.execution_time_ms,
+          entropy_ciphertext: data.entropy_ciphertext,
+          histogram_plaintext: data.histogram_plaintext,
+          histogram_ciphertext: data.histogram_ciphertext,
+        });
+      }
     } catch (err) { setFileError(err instanceof Error ? err.message : 'Koneksi gagal'); } finally { setLoading(false); }
   };
 
@@ -146,7 +195,7 @@ export default function Home() {
               <p className="text-slate-400 text-lg">Military-grade cryptography at your fingertips</p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-20">
+            <div className="flex flex-wrap justify-center gap-12">
               <SkewCard
                 title="Encrypt"
                 description="Lock your data with advanced encryption"
@@ -178,7 +227,34 @@ export default function Home() {
                   Start Decryption
                 </button>
               </SkewCard>
+
+              <SkewCard
+                title="Visualize"
+                description="See why ECB mode is dangerous"
+                gradientFrom="#00f2fe"
+                gradientTo="#4facfe"
+                iconVariant="encrypt"
+                onClick={() => { setMode('visualize'); resetState(); }}
+              >
+                <button 
+                  onClick={() => { setMode('visualize'); resetState(); }}
+                  className="mt-auto w-full py-3 bg-white text-black font-bold rounded transition-all hover:bg-cyan-300"
+                >
+                  View Vulnerability
+                </button>
+              </SkewCard>
             </div>
+          </div>
+        )}
+
+        {mode === 'visualize' && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between mb-2">
+              <BackButton onClick={() => { setMode('menu'); resetState(); }} />
+              <h2 className="text-2xl font-bold uppercase tracking-widest text-cyan-400">VULNERABILITY VISUALIZER</h2>
+              <div className="w-24" />
+            </div>
+            <ImageEncryptionVisualizer />
           </div>
         )}
 
@@ -245,7 +321,6 @@ export default function Home() {
                   {loading ? 'Processing...' : (mode === 'encrypt' ? 'Encrypt Now' : 'Decrypt Now')}
                 </button>
 
-
                 {textError && (
                   <div className="glass-card bg-red-500/10 border-red-500/30 p-5">
                     <p className="text-red-400 text-sm font-semibold">{textError}</p>
@@ -265,6 +340,11 @@ export default function Home() {
                       {textResult}
                     </div>
                   </div>
+                )}
+
+                {/* Analytics Panel (Loading skeleton or results) */}
+                {(loading || metrics) && (
+                  <CryptoAnalyticsPanel loading={loading} metrics={metrics} isEncryption={mode === 'encrypt'} />
                 )}
               </div>
             ) : (
@@ -315,6 +395,11 @@ export default function Home() {
                       Download
                     </button>
                   </div>
+                )}
+
+                {/* Analytics Panel (Loading skeleton or results) */}
+                {(loading || metrics) && (
+                  <CryptoAnalyticsPanel loading={loading} metrics={metrics} isEncryption={mode === 'encrypt'} />
                 )}
               </div>
             )}
