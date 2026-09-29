@@ -9,7 +9,7 @@ app = FastAPI(title="API Portal Agen Rahasia")
 # Tambahkan CORS Middleware agar bisa diakses oleh Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-frontend-vercel-app.vercel.app", "http://localhost:3000"],
+    allow_origins=["https://aplikasi-kripto.vercel.app", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
