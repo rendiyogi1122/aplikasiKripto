@@ -17,7 +17,7 @@ import { validatePassword } from '@/lib/passwordValidation';
 type Mode = 'menu' | 'encrypt' | 'decrypt' | 'visualize' | 'history';
 type ContentType = 'text' | 'file';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>('menu');

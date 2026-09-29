@@ -5,7 +5,7 @@ import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import ChooseFileButton from './ChooseFileButton';
 import BackButton from './BackButton';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => void }) {
   const [file, setFile] = useState<File | null>(null);
