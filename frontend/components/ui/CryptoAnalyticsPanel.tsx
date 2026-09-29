@@ -63,7 +63,7 @@ export default function CryptoAnalyticsPanel({ loading, metrics, isEncryption = 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Waktu Komputasi */}
         <div className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider">
+          <div className="flex items-center justify-between text-slate-white text-xs uppercase tracking-wider">
             <span>Waktu Komputasi</span>
             <Clock className="w-4 h-4 text-yellow-400" />
           </div>
@@ -77,7 +77,7 @@ export default function CryptoAnalyticsPanel({ loading, metrics, isEncryption = 
 
         {/* Card 2: Entropi Shannon */}
         <div className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider">
+          <div className="flex items-center justify-between text-slate-white text-xs uppercase tracking-wider">
             <span>Entropi Shannon</span>
             <BarChart2 className="w-4 h-4 text-cyan-400" />
           </div>
@@ -99,7 +99,7 @@ export default function CryptoAnalyticsPanel({ loading, metrics, isEncryption = 
         {/* Card 3: Avalanche Effect (Encryption only) */}
         {isEncryption && avalanche !== undefined ? (
           <div className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider">
+            <div className="flex items-center justify-between text-slate-white text-xs uppercase tracking-wider">
               <span>Avalanche Effect</span>
               <Activity className="w-4 h-4 text-purple-400" />
             </div>
@@ -119,7 +119,7 @@ export default function CryptoAnalyticsPanel({ loading, metrics, isEncryption = 
           </div>
         ) : (
           <div className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider">
+            <div className="flex items-center justify-between text-slate-white text-xs uppercase tracking-wider">
               <span>Mode Operasi</span>
               <Activity className="w-4 h-4 text-blue-400" />
             </div>

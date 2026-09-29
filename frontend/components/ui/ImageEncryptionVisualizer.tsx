@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ShieldAlert, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import ChooseFileButton from './ChooseFileButton';
+import BackButton from './BackButton';
 
 const API_BASE = 'http://localhost:8000';
 
-export default function ImageEncryptionVisualizer() {
+export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,18 +56,11 @@ export default function ImageEncryptionVisualizer() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="glass-card p-8 border-cyan-500/20">
-        <div className="flex items-start gap-4 mb-8">
-          <div className="p-3 bg-cyan-500/10 rounded-xl">
-            <ShieldAlert className="text-cyan-400 w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-white tracking-tight">Visualisasi Kerentanan ECB</h3>
-            <p className="text-slate-400 text-sm mt-1 leading-relaxed">
-              Demonstrasi mengapa mode Electronic Codebook (ECB) tidak aman. 
-              Gunakan gambar dengan pola jelas atau warna blok solid untuk hasil terbaik.
-            </p>
-          </div>
+      <div className="glass-card p-8 md:p-10 animate-in fade-in slide-in-from-bottom-8 duration-500">
+        <div className="flex items-center justify-between mb-10">
+          <BackButton onClick={onBack} />
+          <h2 className="text-2xl font-bold uppercase tracking-widest">VULNERABILITY VISUALIZER</h2>
+          <div className="w-24" />
         </div>
 
         <div className="space-y-6">
