@@ -20,7 +20,7 @@
 
 ## Current State:
 - Frontend di `frontend/app/page.tsx` dengan 2 mode utama (Enkripsi/Dekripsi) + toggle Text/File
-- Accent color tunggal: Cyan-500
+- Production ready: Deploy ke Vercel & Render dengan API URL dinamis via `.env`
 - Glassmorphism UI: backdrop-blur, semi-transparent cards, cyan accent
 - Premium input forms: glass-textarea, glass-input, glass-select, char counter, password toggle (Eye/EyeOff)
 - Dark mode dengan background Aurora (Three.js shader) + cursor gradient

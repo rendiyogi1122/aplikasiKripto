@@ -162,3 +162,12 @@ File: `frontend/app/page.tsx`
 Backend: `backend/` (FastAPI) + endpoint metrik analitik  
 Preview: Browser preview (localhost:3000)  
 Detector: Run impeccable.cmd detect --json frontend/app/page.tsx after finish
+
+---
+
+## Production Deployment Notes
+
+- **Frontend (Vercel)**: Next.js build otomatis, env vars via dashboard Vercel (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- **Backend (Render)**: `gunicorn` diganti `uvicorn` start command (`uvicorn main:app --host 0.0.0.0 --port $PORT`). Root directory `backend/`.
+- **CORS**: `allow_origins` dibatasi ke domain Vercel production + `localhost:3000`.
+- **Environment**: Hardcoded URL diganti `process.env.NEXT_PUBLIC_API_URL` di `page.tsx` & `ImageEncryptionVisualizer.tsx`.

@@ -6,7 +6,7 @@ import logika
 
 app = FastAPI(title="API Portal Agen Rahasia")
 
-# Tambahkan CORS Middleware agar bisa diakses oleh Next.js frontend
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://aplikasi-kripto.vercel.app", "http://localhost:3000"],
@@ -15,17 +15,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================================================================
-# SCHEMAS (Format Data Request)
-# =========================================================================
 class TextRequest(BaseModel):
     teks: str
     password_kripto: str
     algo: str = "AES-GCM"
 
-# =========================================================================
-# ENDPOINTS API RESTful
-# =========================================================================
+# RESTful API Endpoints
 
 @app.get("/")
 def home():
