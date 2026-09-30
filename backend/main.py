@@ -252,7 +252,7 @@ def insert_image_to_worksheet(worksheet, row, col, b64_str, x_scale=0.9, y_scale
 def format_file_size(size_bytes: Any) -> str:
     """Mengonversi ukuran file ke satuan MB agar seragam dan mudah dipahami."""
     if size_bytes is None:
-        return "0 B"
+        return "0.00 MB"
     
     if isinstance(size_bytes, str):
         size_str = size_bytes.strip()
