@@ -22,17 +22,13 @@ backend/pengujian/__pycache__/
 .DS_Store
 
 # IDE
-.vscode/*
+.vscode/
 
 # Output Data
 
 .agents/
 
 # Berkas Rahasia
-prompt.txt
-progres.md
-databasescema.md
-DESIGN.md
-PRODUCT.md
-demo.md
+*.md
+!README.md
 skills-lock.json
