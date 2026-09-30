@@ -6,40 +6,41 @@ import math
 import random
 from collections import Counter
 import time
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
 from cryptography.exceptions import InvalidTag
-from PIL import Image
+from PIL import Image, ImageDraw
 
 def generate_comparison_histogram_image_base64(plaintext_bytes: bytes, ciphertext_bytes: bytes) -> str:
-    """Membuat plot histogram perbandingan Plaintext vs Ciphertext menggunakan matplotlib dengan resolusi tinggi dan mengembalikannya sebagai string Base64 PNG."""
+    """Membuat histogram perbandingan Plaintext vs Ciphertext menggunakan PIL (tanpa matplotlib) dan mengembalikan Base64 PNG."""
     try:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3.5), dpi=150)
+        width, height = 512, 200
+        bg_color = (15, 23, 42)  # dark slate #0f172a
+        img = Image.new('RGB', (width, height), color=bg_color)
+        draw = ImageDraw.Draw(img)
         
-        ax1.hist(list(plaintext_bytes) if plaintext_bytes else [0], bins=256, range=(0, 255), color='#3b82f6', alpha=0.8)
-        ax1.set_title('Plaintext', fontsize=10, color='#1e293b', fontweight='bold')
-        ax1.tick_params(axis='both', labelsize=8)
-        ax1.grid(True, linestyle='--', alpha=0.3)
+        def draw_hist(data: bytes, baseline_y: int, color_hex: str):
+            counts = [0] * 256
+            for b in data:
+                counts[b] += 1
+            max_c = max(counts) if max(counts) > 0 else 1
+            scale = 80 / max_c
+            for i, c in enumerate(counts):
+                x = i * 2
+                h = int(c * scale)
+                if h > 0:
+                    draw.line([(x, baseline_y), (x, baseline_y - h)], fill=color_hex)
         
-        ax2.hist(list(ciphertext_bytes) if ciphertext_bytes else [0], bins=256, range=(0, 255), color='#f97316', alpha=0.8)
-        ax2.set_title('Ciphertext', fontsize=10, color='#1e293b', fontweight='bold')
-        ax2.tick_params(axis='both', labelsize=8)
-        ax2.grid(True, linestyle='--', alpha=0.3)
+        draw_hist(plaintext_bytes, 90, '#3b82f6')   # blue
+        draw_hist(ciphertext_bytes, 190, '#f97316') # orange
         
-        plt.tight_layout()
-
         buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
-        plt.close(fig)
-        buf.seek(0)
+        img.save(buf, format='PNG')
         return base64.b64encode(buf.getvalue()).decode('utf-8')
     except Exception as e:
-        print(f"Error generating comparison histogram: {e}")
+        print(f"Error drawing histogram with PIL: {e}")
         return ""
 
 def derive_key(password: str, salt: bytes) -> bytes:
