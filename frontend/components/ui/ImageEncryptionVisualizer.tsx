@@ -170,10 +170,7 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
                 Memproses Visualisasi...
               </>
             ) : (
-              <>
-                <ImageIcon className="w-4 h-4" />
-                Mulai Visualisasi
-              </>
+              'Mulai Visualisasi'
             )}
           </button>
         </div>
@@ -187,26 +184,6 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
 
       {results && (
         <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-          <div className="flex justify-end">
-            <button
-              onClick={handleDownloadExcel}
-              disabled={downloadingExcel}
-              className="glass-button px-6 py-3 text-xs font-bold uppercase tracking-wider bg-linear-to-r from-green-600 to-emerald-600 border-none text-white shadow-lg flex items-center gap-2 disabled:opacity-50 hover:from-green-500 hover:to-emerald-500 transition-all cursor-pointer"
-            >
-              {downloadingExcel ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Menggenerate Excel...
-                </>
-              ) : (
-                <>
-                  <FileSpreadsheet className="w-4 h-4" />
-                  Download Excel Perbandingan (.xlsx)
-                </>
-              )}
-            </button>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Original */}
             <div className="glass-card p-4 flex flex-col items-center gap-4">
@@ -239,6 +216,15 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
               </p>
             </div>
           </div>
+
+          <button
+            onClick={handleDownloadExcel}
+            disabled={downloadingExcel}
+            className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center gap-2"
+          >
+            {downloadingExcel ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+            {downloadingExcel ? 'Downloading...' : 'Download Excel File'}
+          </button>
         </div>
       )}
     </div>
