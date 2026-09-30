@@ -520,3 +520,5 @@ def download_excel_visualisasi(payload: Dict[str, Any]):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=visualisasi_ecb_gcm.xlsx"}
     )
+
+# update 30-09-26
