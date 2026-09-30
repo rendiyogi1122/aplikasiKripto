@@ -1,7 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, ChevronDown, AlertCircle, Clock } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react'; 
+import { 
+  Eye, 
+  EyeOff, 
+  ChevronDown, 
+  AlertCircle, 
+  Clock, 
+  FileSpreadsheet, 
+  Loader2 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackgroundGlobal from '@/components/ui/BackgroundGlobal';
 import SkewCard from '@/components/ui/SkewCard';
@@ -53,6 +61,60 @@ export default function Home() {
 
   // History mode state
   const [historyType, setHistoryType] = useState<ContentType>('text');
+  const [downloadingTextExcel, setDownloadingTextExcel] = useState(false);
+  const [downloadingFileExcel, setDownloadingFileExcel] = useState(false);
+
+  const handleDownloadExcelTeks = async () => {
+    if (textHistory.length === 0) return;
+    setDownloadingTextExcel(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/download-excel/teks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(textHistory),
+      });
+      if (!response.ok) throw new Error('Gagal mengunduh Excel teks');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `riwayat_enkripsi_teks_${Date.now()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal download Excel');
+    } finally {
+      setDownloadingTextExcel(false);
+    }
+  };
+
+  const handleDownloadExcelFile = async () => {
+    if (fileHistory.length === 0) return;
+    setDownloadingFileExcel(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/download-excel/file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fileHistory),
+      });
+      if (!response.ok) throw new Error('Gagal mengunduh Excel file');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `riwayat_enkripsi_file_${Date.now()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Gagal download Excel');
+    } finally {
+      setDownloadingFileExcel(false);
+    }
+  };
   
   // Instance state management
   const textHook = useTextEncryptionHistory();
@@ -243,7 +305,11 @@ export default function Home() {
         const { error: saveError } = await saveTextEncryptionHistory(
           data.ciphertext,
           encryptedPassword,
-          algo
+          algo,
+          data.execution_time_ms,
+          data.entropy_ciphertext,
+          data.avalanche_percentage,
+          data.histogram_base64
         );
         if (!saveError) mutateText();
       }
@@ -337,7 +403,11 @@ export default function Home() {
           encryptedPassword,
           fileAlgo,
           `${file.name}.enc`,
-          file.size
+          file.size,
+          data.execution_time_ms,
+          data.entropy_ciphertext,
+          data.avalanche_percentage,
+          data.histogram_base64
         );
         if (!saveError) mutateFile();
       }
@@ -383,7 +453,11 @@ export default function Home() {
           encryptedPassword,
           fileAlgo,
           `${file.name}.enc`,
-          file.size
+          file.size,
+          data.execution_time_ms,
+          data.entropy_ciphertext,
+          50.0,
+          data.histogram_base64
         );
         if (!saveError) mutateFile();
       }
@@ -551,18 +625,40 @@ export default function Home() {
               <div className="w-24" />
             </div>
 
-            <div className="flex gap-3 mb-8 glass-nav p-2 rounded-full">
-              {(['text', 'file'] as ContentType[]).map((type) => (
-                <button key={type}
-                  onClick={() => setHistoryType(type)}
-                  className={`flex-1 rounded-full py-3 text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
-                    historyType === type
-                      ? 'bg-linear-to-r from-orange-500 to-yellow-500 text-white'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}>
-                  {type}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+              <div className="flex gap-3 glass-nav p-2 rounded-full w-full md:w-auto">
+                {(['text', 'file'] as ContentType[]).map((type) => (
+                  <button key={type}
+                    onClick={() => setHistoryType(type)}
+                    className={`flex-1 md:px-8 rounded-full py-3 text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
+                      historyType === type
+                        ? 'bg-linear-to-r from-orange-500 to-yellow-500 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}>
+                    {type}
+                  </button>
+                ))}
+              </div>
+
+              {historyType === 'text' ? (
+                <button
+                  onClick={handleDownloadExcelTeks}
+                  disabled={downloadingTextExcel || textHistory.length === 0}
+                  className="glass-button px-6 py-3 text-xs font-bold uppercase tracking-wider bg-linear-to-r from-green-600 to-emerald-600 border-none text-white shadow-lg flex items-center gap-2 disabled:opacity-50 hover:from-green-500 hover:to-emerald-500 transition-all cursor-pointer w-full md:w-auto justify-center"
+                >
+                  {downloadingTextExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                  Download Excel Teks (.xlsx)
                 </button>
-              ))}
+              ) : (
+                <button
+                  onClick={handleDownloadExcelFile}
+                  disabled={downloadingFileExcel || fileHistory.length === 0}
+                  className="glass-button px-6 py-3 text-xs font-bold uppercase tracking-wider bg-linear-to-r from-green-600 to-emerald-600 border-none text-white shadow-lg flex items-center gap-2 disabled:opacity-50 hover:from-green-500 hover:to-emerald-500 transition-all cursor-pointer w-full md:w-auto justify-center"
+                >
+                  {downloadingFileExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                  Download Excel File (.xlsx)
+                </button>
+              )}
             </div>
 
             {historyType === 'text' ? (

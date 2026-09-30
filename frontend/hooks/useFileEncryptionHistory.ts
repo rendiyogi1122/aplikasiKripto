@@ -9,6 +9,10 @@ export interface FileEncryptionRecord {
   encrypted_filename: string | null;
   file_size: number | null;
   created_at: string;
+  waktu_komputasi_ms?: number;
+  entropi_shannon?: number;
+  avalanche_effect?: number;
+  histogram_base64?: string;
 }
 
 export const useFileEncryptionHistory = () => {
@@ -43,7 +47,11 @@ export const saveFileEncryptionHistory = async (
   passwordCiphertext: string,
   method: string,
   encryptedFilename?: string,
-  fileSize?: number
+  fileSize?: number,
+  waktuKomputasiMs?: number,
+  entropiShannon?: number,
+  avalancheEffect?: number,
+  histogramBase64?: string
 ) => {
   try {
     const { error } = await supabase.from('file_encryption_history').insert({
@@ -52,6 +60,10 @@ export const saveFileEncryptionHistory = async (
       method,
       encrypted_filename: encryptedFilename,
       file_size: fileSize,
+      waktu_komputasi_ms: waktuKomputasiMs || 0,
+      entropi_shannon: entropiShannon || 0,
+      avalanche_effect: avalancheEffect || 0,
+      histogram_base64: histogramBase64 || '',
     });
     return { error };
   } catch (err) {

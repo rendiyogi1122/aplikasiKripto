@@ -7,6 +7,10 @@ export interface TextEncryptionRecord {
   password_ciphertext: string;
   method: string;
   created_at: string;
+  waktu_komputasi_ms?: number;
+  entropi_shannon?: number;
+  avalanche_effect?: number;
+  histogram_base64?: string;
 }
 
 export const useTextEncryptionHistory = () => {
@@ -39,13 +43,21 @@ export const useTextEncryptionHistory = () => {
 export const saveTextEncryptionHistory = async (
   ciphertext: string,
   passwordCiphertext: string,
-  method: string
+  method: string,
+  waktuKomputasiMs?: number,
+  entropiShannon?: number,
+  avalancheEffect?: number,
+  histogramBase64?: string
 ) => {
   try {
     const { error } = await supabase.from('text_encryption_history').insert({
       ciphertext,
       password_ciphertext: passwordCiphertext,
       method,
+      waktu_komputasi_ms: waktuKomputasiMs || 0,
+      entropi_shannon: entropiShannon || 0,
+      avalanche_effect: avalancheEffect || 0,
+      histogram_base64: histogramBase64 || '',
     });
     return { error };
   } catch (err) {

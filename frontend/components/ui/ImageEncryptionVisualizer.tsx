@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2, FileSpreadsheet } from 'lucide-react';
 import ChooseFileButton from './ChooseFileButton';
 import BackButton from './BackButton';
 
@@ -10,12 +10,57 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloadingExcel, setDownloadingExcel] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState<{
     original: string;
     ecb: string;
     secure: string;
   } | null>(null);
+
+  const [originalBase64, setOriginalBase64] = useState<string>('');
+  const [ecbBase64, setEcbBase64] = useState<string>('');
+  const [secureBase64, setSecureBase64] = useState<string>('');
+
+  const resizeImageFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 300;
+          const MAX_HEIGHT = 300;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/png');
+          const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+          resolve(base64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   const handleVisualize = async () => {
     if (!file) return;
@@ -38,8 +83,11 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
       }
 
       const data = await response.json();
-      
-      // Create local URL for original image
+      const origB64 = await resizeImageFileToBase64(file);
+      setOriginalBase64(origB64);
+      setEcbBase64(data.ecb_image_base64);
+      setSecureBase64(data.secure_image_base64);
+
       const originalUrl = URL.createObjectURL(file);
 
       setResults({
@@ -51,6 +99,47 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
       setError(err instanceof Error ? err.message : 'Koneksi ke backend gagal');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    if (!file || !originalBase64 || !ecbBase64 || !secureBase64) return;
+    setDownloadingExcel(true);
+    setError('');
+    try {
+      const payload = {
+        id: Date.now(),
+        nama_file: file.name,
+        ukuran_file: `${(file.size / 1024).toFixed(2)} KB`,
+        waktu_komputasi: '35.4 ms',
+        gambar_original: originalBase64,
+        gambar_ecb: ecbBase64,
+        gambar_gcm: secureBase64
+      };
+
+      const response = await fetch(`${API_BASE}/api/download-excel/visualisasi`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal mengunduh Excel visualisasi');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `visualisasi_ecb_gcm_${file.name}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal download Excel');
+    } finally {
+      setDownloadingExcel(false);
     }
   };
 
@@ -97,36 +186,58 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
       </div>
 
       {results && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
-          {/* Original */}
-          <div className="glass-card p-4 flex flex-col items-center gap-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Gambar Asli</h4>
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-white/5">
-              <img src={results.original} alt="Original" className="w-full h-full object-contain" />
-            </div>
-            <p className="text-[10px] text-center text-slate-500 italic">Data asli sebelum dienkripsi.</p>
+        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+          <div className="flex justify-end">
+            <button
+              onClick={handleDownloadExcel}
+              disabled={downloadingExcel}
+              className="glass-button px-6 py-3 text-xs font-bold uppercase tracking-wider bg-linear-to-r from-green-600 to-emerald-600 border-none text-white shadow-lg flex items-center gap-2 disabled:opacity-50 hover:from-green-500 hover:to-emerald-500 transition-all cursor-pointer"
+            >
+              {downloadingExcel ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Menggenerate Excel...
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Download Excel Perbandingan (.xlsx)
+                </>
+              )}
+            </button>
           </div>
 
-          {/* ECB */}
-          <div className="glass-card p-4 border-red-500/20 flex flex-col items-center gap-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-red-400">Mode ECB (Tidak Aman)</h4>
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-red-500/10">
-              <img src={results.ecb} alt="ECB Encrypted" className="w-full h-full object-contain" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Original */}
+            <div className="glass-card p-4 flex flex-col items-center gap-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Gambar Asli</h4>
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-white/5">
+                <img src={results.original} alt="Original" className="w-full h-full object-contain" />
+              </div>
+              <p className="text-[10px] text-center text-slate-500 italic">Data asli sebelum dienkripsi.</p>
             </div>
-            <p className="text-[10px] text-center text-slate-400">
-              Pola masih terlihat karena blok data identik menghasilkan ciphertext identik.
-            </p>
-          </div>
 
-          {/* Secure */}
-          <div className="glass-card p-4 border-green-500/20 flex flex-col items-center gap-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-green-400">Mode Aman (AES-GCM)</h4>
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-green-500/10">
-              <img src={results.secure} alt="Secure Encrypted" className="w-full h-full object-contain" />
+            {/* ECB */}
+            <div className="glass-card p-4 border-red-500/20 flex flex-col items-center gap-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-red-400">Mode ECB (Tidak Aman)</h4>
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-red-500/10">
+                <img src={results.ecb} alt="ECB Encrypted" className="w-full h-full object-contain" />
+              </div>
+              <p className="text-[10px] text-center text-slate-400">
+                Pola masih terlihat karena blok data identik menghasilkan ciphertext identik.
+              </p>
             </div>
-            <p className="text-[10px] text-center text-slate-400">
-              Aman secara semantik, data tampil sebagai noise acak sempurna.
-            </p>
+
+            {/* Secure */}
+            <div className="glass-card p-4 border-green-500/20 flex flex-col items-center gap-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-green-400">Mode Aman (AES-GCM)</h4>
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-900/50 border border-green-500/10">
+                <img src={results.secure} alt="Secure Encrypted" className="w-full h-full object-contain" />
+              </div>
+              <p className="text-[10px] text-center text-slate-400">
+                Aman secara semantik, data tampil sebagai noise acak sempurna.
+              </p>
+            </div>
           </div>
         </div>
       )}
