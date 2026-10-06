@@ -333,11 +333,11 @@ def download_excel_teks(items: List[Dict[str, Any]]):
     worksheet.set_column(4, 4, 20)
     worksheet.set_column(5, 5, 18)
     worksheet.set_column(6, 6, 18)
-    worksheet.set_column(7, 7, 48)
+    worksheet.set_column(7, 7, 55)
 
     for idx, item in enumerate(items):
         row_num = idx + 1
-        worksheet.set_row(row_num, 140)
+        worksheet.set_row(row_num, 160)
 
         uji_id = item.get('id', row_num)
         ciphertext = item.get('ciphertext', '-')
@@ -358,7 +358,7 @@ def download_excel_teks(items: List[Dict[str, Any]]):
         worksheet.write(row_num, 7, "", center_format)
 
         if hist_b64 and not isinstance(hist_b64, list):
-            insert_histogram_to_worksheet(worksheet, row_num, 7, hist_b64, x_scale=0.85, y_scale=0.85)
+            insert_histogram_to_worksheet(worksheet, row_num, 7, hist_b64, x_scale=0.45, y_scale=0.45)
 
     workbook.close()
     output.seek(0)
