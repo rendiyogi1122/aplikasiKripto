@@ -100,7 +100,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fileHistory),
       });
-      if (!response.ok) throw new Error('Gagal mengunduh Excel file');
+      if (!response.ok) throw new Error('Gagal mengunduh File Excel');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -517,7 +517,7 @@ export default function Home() {
       <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-6">
         <nav className="glass-nav px-8 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-widest uppercase text-white">KRIPTO</h1>
+            <h1 className="text-xl font-bold tracking-widest uppercase text-white">Selamat Datang</h1>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">AES-GCM · ChaCha20</p>
           </div>
           <div className="flex gap-2">
@@ -532,15 +532,15 @@ export default function Home() {
         {mode === 'menu' && (
           <div className="space-y-8 animate-in fade-in zoom-in duration-500">
             <div className="text-center space-y-4 mb-12">
-              <h2 className="text-5xl font-bold tracking-tight text-white">Secure Encryption</h2>
-              <p className="text-slate-400 text-lg">Military-grade cryptography at your fingertips</p>
+              <h2 className="text-5xl font-bold tracking-tight text-white">Section256</h2>
+              <p className="text-slate-400 text-lg">Ruang Isolasi & Investigasi Pesan/File Rahasia</p>
             </div>
 
             <div className="flex justify-center">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[62.72px] gap-y-[83.3px] relative">
                 <SkewCard
                   title="Encrypt"
-                  description="Lock your data with advanced encryption"
+                  description="Isolasi Pesan atau File Rahasia"
                   gradientFrom="#ffbc00"
                   gradientTo="#ff0058"
                   iconVariant="encrypt"
@@ -556,7 +556,7 @@ export default function Home() {
 
                 <SkewCard
                   title="Decrypt"
-                  description="Unlock encrypted data securely"
+                  description="Pecahkan Misteri Pesan/File Rahasia"
                   gradientFrom="#03a9f4"
                   gradientTo="#ff0058"
                   iconVariant="decrypt"
@@ -584,7 +584,7 @@ export default function Home() {
                       >
                         <SkewCard
                           title="Visualize"
-                          description="See why ECB mode is dangerous"
+                          description="Pantau Celah Visual dalam Gambar"
                           gradientFrom="#00f2fe"
                           gradientTo="#4facfe"
                           iconVariant="visualize"
@@ -607,7 +607,7 @@ export default function Home() {
                       >
                         <SkewCard
                           title="Data Tersimpan"
-                          description="View encrypted text & file history"
+                          description="Lihat Riwayat Pesan/File Rahasia"
                           gradientFrom="#10b981"
                           gradientTo="#059669"
                           iconVariant="database"
@@ -689,7 +689,7 @@ export default function Home() {
                   className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center gap-2"
                 >
                   {downloadingTextExcel ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                  {downloadingTextExcel ? 'Downloading...' : 'Download Excel File'}
+                  {downloadingTextExcel ? 'Downloading...' : 'Download File Excel'}
                 </button>
               </>
             ) : (
@@ -726,7 +726,7 @@ export default function Home() {
                   className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center gap-2"
                 >
                   {downloadingFileExcel ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                  {downloadingFileExcel ? 'Downloading...' : 'Download Excel File'}
+                  {downloadingFileExcel ? 'Downloading...' : 'Download File Excel'}
                 </button>
               </>
             )}
@@ -764,7 +764,7 @@ export default function Home() {
                   </div>
                   <div className="input-wrapper">
                     <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)}
-                      className="glass-textarea" placeholder="Enter your message..." />
+                      className="glass-textarea" placeholder={mode === 'encrypt' ? "Masukan Pesan Anda" : "Masukan Pesan Rahasia"} />
                   </div>
                 </div>
 
@@ -773,7 +773,7 @@ export default function Home() {
                     <label className="field-label">Password</label>
                     <div className="input-wrapper">
                       <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                        className="glass-input" placeholder="Enter secret key..." disabled={textLockout > 0} />
+                        className="glass-input" placeholder="Masukan Kunci Rahasia" disabled={textLockout > 0} />
                       {textLockout > 0 && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-red-500 font-bold flex items-center gap-1"><Clock size={16}/>{textLockout}s</span>}
                       <button type="button" className="toggle-password-btn" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff /> : <Eye />}
@@ -794,7 +794,7 @@ export default function Home() {
 
                 <button onClick={mode === 'encrypt' ? handleEncryptText : handleDecryptText} disabled={loading || !textInput.trim() || !password.trim() || retryAfter > 0}
                   className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? 'Processing...' : (retryAfter > 0 ? `Wait ${retryAfter}s` : (mode === 'encrypt' ? 'Encrypt Now' : 'Decrypt Now'))}
+                  {loading ? 'Processing...' : (retryAfter > 0 ? `Wait ${retryAfter}s` : (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'))}
                 </button>
 
                 {textError && (
@@ -832,7 +832,7 @@ export default function Home() {
                     <label className="field-label">Password</label>
                     <div className="input-wrapper">
                       <input type={showPassword ? 'text' : 'password'} value={filePassword} onChange={(e) => setFilePassword(e.target.value)}
-                        className="glass-input" placeholder="Enter secret key..." disabled={fileLockout > 0} />
+                        className="glass-input" placeholder="Masukan Kunci Rahasia" disabled={fileLockout > 0} />
                       {fileLockout > 0 && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-red-500 font-bold flex items-center gap-1"><Clock size={16}/>{fileLockout}s</span>}
                       <button type="button" className="toggle-password-btn" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff /> : <Eye />}
@@ -853,7 +853,7 @@ export default function Home() {
 
                 <button onClick={mode === 'encrypt' ? handleEncryptFile : handleDecryptFile} disabled={loading || !file || !filePassword.trim() || retryAfter > 0}
                   className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50">
-                  {loading ? 'Processing...' : (retryAfter > 0 ? `Wait ${retryAfter}s` : (mode === 'encrypt' ? 'Encrypt File' : 'Decrypt File'))}
+                  {loading ? 'Processing...' : (retryAfter > 0 ? `Wait ${retryAfter}s` : (mode === 'encrypt' ? 'Encrypt' : 'Decrypt'))}
                 </button>
 
                 {fileError && (

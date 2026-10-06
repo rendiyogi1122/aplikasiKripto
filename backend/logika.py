@@ -12,35 +12,53 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
 from cryptography.exceptions import InvalidTag
 from PIL import Image, ImageDraw
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
 
 def generate_comparison_histogram_image_base64(plaintext_bytes: bytes, ciphertext_bytes: bytes) -> str:
-    """Membuat histogram perbandingan Plaintext vs Ciphertext menggunakan PIL (tanpa matplotlib) dan mengembalikan Base64 PNG."""
+    """Membuat histogram perbandingan Plaintext vs Ciphertext menggunakan Matplotlib dengan kualitas tinggi, lengkap, dan jernih."""
     try:
-        width, height = 512, 200
-        bg_color = (15, 23, 42)  # dark slate #0f172a
-        img = Image.new('RGB', (width, height), color=bg_color)
-        draw = ImageDraw.Draw(img)
+        hist_pt = [0] * 256
+        for b in plaintext_bytes:
+            hist_pt[b] += 1
+
+        hist_ct = [0] * 256
+        for b in ciphertext_bytes:
+            hist_ct[b] += 1
+
+        bins = list(range(256))
+
+        fig, ax = plt.subplots(figsize=(9, 4), dpi=200)
         
-        def draw_hist(data: bytes, baseline_y: int, color_hex: str):
-            counts = [0] * 256
-            for b in data:
-                counts[b] += 1
-            max_c = max(counts) if max(counts) > 0 else 1
-            scale = 80 / max_c
-            for i, c in enumerate(counts):
-                x = i * 2
-                h = int(c * scale)
-                if h > 0:
-                    draw.line([(x, baseline_y), (x, baseline_y - h)], fill=color_hex)
+        bg_color = '#0f172a'
+        fig.patch.set_facecolor(bg_color)
+        ax.set_facecolor(bg_color)
+
+        ax.bar(bins, hist_pt, width=1.0, color='#3b82f6', alpha=0.6, label='Plaintext')
+        ax.bar(bins, hist_ct, width=1.0, color='#f97316', alpha=0.75, label='Ciphertext')
+
+        ax.set_title('Perbandingan Distribusi Frekuensi Byte: Plaintext vs Ciphertext', color='#f8fafc', fontsize=11, fontweight='bold', pad=12)
+        ax.set_xlabel('Nilai Byte (0 – 255)', color='#cbd5e1', fontsize=9, labelpad=8)
+        ax.set_ylabel('Frekuensi', color='#cbd5e1', fontsize=9, labelpad=8)
         
-        draw_hist(plaintext_bytes, 90, '#3b82f6')   # blue
-        draw_hist(ciphertext_bytes, 190, '#f97316') # orange
-        
+        ax.tick_params(colors='#94a3b8', labelsize=8)
+        for spine in ax.spines.values():
+            spine.set_color('#334155')
+
+        ax.grid(True, color='#334155', linestyle='--', linewidth=0.5, alpha=0.5)
+        ax.legend(facecolor='#1e293b', edgecolor='#475569', labelcolor='#f8fafc', fontsize=8, loc='upper right')
+
+        plt.tight_layout()
+
         buf = io.BytesIO()
-        img.save(buf, format='PNG')
+        plt.savefig(buf, format='png', dpi=200, facecolor=fig.get_facecolor(), edgecolor='none')
+        plt.close(fig)
+        buf.seek(0)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
     except Exception as e:
-        print(f"Error drawing histogram with PIL: {e}")
+        print(f"Error drawing histogram with Matplotlib: {e}")
         return ""
 
 def derive_key(password: str, salt: bytes) -> bytes:
