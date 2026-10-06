@@ -223,7 +223,7 @@ export default function ImageEncryptionVisualizer({ onBack }: { onBack: () => vo
             className="w-full glass-button py-5 text-base font-bold uppercase tracking-widest bg-linear-to-r from-orange-500 to-yellow-500 border-none disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center gap-2"
           >
             {downloadingExcel ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-            {downloadingExcel ? 'Downloading...' : 'Download Excel File'}
+            {downloadingExcel ? 'Downloading...' : 'Download File Excel'}
           </button>
         </div>
       )}
